@@ -1,0 +1,48 @@
+
+# see https://learn.pi-supply.com/make/how-to-save-power-on-your-raspberry-pi/
+
+
+# Turn OFF USB chip
+
+function usb_off() {
+    echo '1-1' |sudo tee /sys/bus/usb/drivers/usb/unbind
+}
+ # Turn ON USB chip
+
+function usb_on() {
+    echo '1-1' |sudo tee /sys/bus/usb/drivers/usb/bind
+}
+
+# Turn OFF HDMI output
+
+function hdmi_off() {
+    sudo /opt/vc/bin/tvservice -o
+}
+
+# Turn ON HDMI output
+
+function hdmi_on() {
+    sudo /opt/vc/bin/tvservice -p
+}
+
+function slow_down() {
+    cat `
+    arm_freq_min=250
+    core_freq_min=100
+    sdram_freq_min=150
+    over_voltage_min=0
+
+    ` >> /boot/config.txt
+}
+
+
+# restart 
+# dtoverlay=pi3-disable-wifi
+# dtoverlay=pi3-disable-bt
+# restart
+
+function leds_on() {
+    dtparam=act_led_trigger=none
+    dtparam=act_led_activelow=on
+}
+

@@ -1,0 +1,11 @@
+#!/bin/bash
+
+export PIJOS=`avahi-browse -t _workstation._tcp | grep wlan0 | grep pijo | grep IPv4 | uniq`
+
+export REGEX="*pijo-*[$"
+$PIJOS =~ REGEX
+echo "MATCHED: ${BASH_REMATCH}"
+
+
+echo $PIJOS
+

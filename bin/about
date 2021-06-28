@@ -1,0 +1,70 @@
+#!/bin/bash
+
+if [ -z "$PIJO_HOME" ];then
+    echo "PIJO_HOME is auto-defined"
+    PIJO_HOME=$HOME/pijo
+fi
+
+function about() {
+    UPTIME=`uptime`
+    BATTERY=`$PIJO_HOME/pijo-core/py/rpi_ups_soc.py >/dev/null || echo $?`
+    PIJO_ID=`$PIJO_HOME/bin/id`
+    IPv4=`hostname -I | awk '{print $1}'`
+
+    TEST_STACK_RUNNING=`docker stack ps pijo | grep NODE`
+    if [ -z "$IS_STACK_RUNNING" ];then
+        STACK_RUNNING="true"
+    else
+        STACK_RUNNING="false"
+    fi
+
+    NANO_TIME=`date +"%N"`
+
+    PIJO_VERSION=$(cat $PIJO_HOME/package.json \
+    | grep version \
+    | head -1 \
+    | awk -F: '{ print $2 }' \
+    | sed 's/[",]//g' \
+    | tr -d '[[:space:]]'\
+    )
+
+    PIJO_HOST="${PIJO_ID}.local"
+
+    IS_ONLINE=`ping -c 1 google.com>/dev/null 2>/dev/null`
+    if [ $? -eq 0 ];then
+        PIJO_HAS_INTERNET=true
+    else
+        PIJO_HAS_INTERNET=false
+    fi
+
+    IS_SELF_ONLINE=`ping -c 1 $PIJO_ID.local>/dev/null 2>/dev/null`
+    if [ $? -eq 0 ];then
+        PIJO_SELF_ONLINE=true
+    else
+        PIJO_SELF_ONLINE=false
+    fi
+
+    IS_HUB_ONLINE=`ping -c 1 pijo.local>/dev/null 2>/dev/null`
+    if [ $? -eq 0 ];then
+        HUB_ONLINE=true
+    else
+        HUB_ONLINE=false
+    fi
+
+    JSON="{"
+    JSON="$JSON\"id\": \"$PIJO_ID\","
+    JSON="$JSON\"version\": \"$PIJO_VERSION\","
+    JSON="$JSON\"timestamp\": $NANO_TIME,"
+    JSON="$JSON\"uptime\": \"$UPTIME\","
+    JSON="$JSON\"battery\": \"$BATTERY\","
+    JSON="$JSON\"internet\": $PIJO_HAS_INTERNET,"
+    JSON="$JSON\"online\": $PIJO_SELF_ONLINE,"
+    JSON="$JSON\"hub\": $HUB_ONLINE,"
+    # echo "    \"running\": $STACK_RUNNING,"
+    JSON="$JSON\"hostname\": \"$PIJO_HOST\","
+    JSON="$JSON\"IPv4\": \"$IPv4\","
+    JSON="$JSON}"
+}
+
+about
+echo "$JSON"

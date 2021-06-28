@@ -1,0 +1,12 @@
+
+PIJO_HOST=$1
+
+if [ -z "$PIJO_HOST" ];then
+    echo "missing PIJO_HOST"
+    exit 1
+fi
+
+rsync ~/.ssh/id_rsa.pub pi@$PIJO_HOST:.ssh/authorized_keys
+rsync -rv . pi@$PIJO_HOST:./pijo/ --filter="dir-merge,- .gitignore" # --exclude .git --exclude='/.git' 
+
+ssh pi@$PIJO_HOST ./pijo/bin/install

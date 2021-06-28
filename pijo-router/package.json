@@ -1,0 +1,24 @@
+{
+  "name": "pijo",
+  "version": "0.1.0",
+  "scripts": {
+    "start": "tsc && node lib/index.js",
+    "pijo": "node lib/index.js"
+  },
+  "description": "PIJO",
+  "main": "lib/index.js",
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^15.12.2",
+    "tslint": "^5.12.1",
+    "typescript": "^4.3.2"
+  },
+  "dependencies": {
+    "graphdb": "^2.0.0",
+    "lodash": "^4.17.21",
+    "mqtt": "^4.2.6",
+    "string-to-stream": "^3.0.1",
+    "uuid": "^3.4.0"
+  }
+}

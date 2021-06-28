@@ -1,0 +1,11 @@
+*.zip
+tmp
+*.war
+*.tar*
+node_modules
+webapps
+lib
+secret
+local
+log
+downloads

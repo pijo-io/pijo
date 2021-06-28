@@ -1,0 +1,9 @@
+set -e
+
+cd docker/node-red-cv/
+docker build . -t pijo-node-red-cv -f Dockerfile 
+docker tag pijo-node-red-cv pijo-node-red-cv:latest
+cd ../..
+
+docker login
+docker push pijo-node-red-cv:latest

@@ -1,0 +1,14 @@
+{
+  "name": "pijo-node-red",
+  "version": "0.1.0",
+  "scripts": {
+    "start": "node $NODE_OPTIONS node_modules/node-red/red.js $FLOWS"
+  },
+  "description": "PIJO: node-red",
+  "main": "index.js",
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "node-red": "^1.3.5"
+  }
+}

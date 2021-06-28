@@ -1,0 +1,26 @@
+#!/bin/bash
+
+if [ -z "$PIJO_HOME" ];then
+    echo "PIJO_HOME not set"
+    PIJO_HOME="/home/pi/pijo/"
+fi
+
+set -e
+set -x
+
+LOG_DIR=$PIJO_HOME/log/uptimer
+export TODAY=`date +"%Y-%m-%d-%H-%M"`
+LOG_FILE="$LOG_DIR/$TODAY.log"
+mkdir -p $LOG_DIR
+touch $LOG_FILE
+
+i2cdetect -y 1 >/dev/null
+
+echo "starting @ $TODAY into $LOG_FILE"
+touch $LOG_FILE
+
+while :
+do
+    echo "`$PIJO_HOME/bin/about`," >>$LOG_FILE
+    sleep 59 # log every 1 minute - assuming it takes 1 to get stats
+ done

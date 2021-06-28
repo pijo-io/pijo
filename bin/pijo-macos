@@ -1,0 +1,11 @@
+
+# docker stacks
+
+IS_STACK_RUNNING=`docker stack ps pijo | grep NODE`
+
+if [ -z "$IS_STACK_RUNNING" ];then
+    echo "PIJO stack not running. Starting ..."
+fi
+
+docker stack deploy pijo -c stacks/pijo_macos.yaml 
+docker container ls

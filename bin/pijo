@@ -1,0 +1,62 @@
+#!/bin/bash
+
+# Check PIJO
+if [ -z "$PIJO_HOME" ];then
+    echo "PIJO_HOME not set"
+    PIJO_HOME="/home/pi/pijo/"
+fi
+
+if [ ! -d "$PIJO_HOME/bin" ];then
+    echo "PIJO: not installed"
+    exit 1
+fi
+
+# Check system
+
+if [ ! -f "/sys/class/net/wlan0/address" ];then
+    echo "PIJO: No 'wlan0' address found"
+    exit 2
+fi
+
+if [ ! -f "/usr/bin/docker" ];then
+    echo "PIJO: Docker not installed"
+    exit 3
+fi
+
+PWD=`pwd`
+cd $PIJO_HOME
+
+if [ -z "$PIJO_ID" ];then
+    MAC_ADDR=`cat /sys/class/net/wlan0/address | sed -e "s/:/-/g"`
+    PIJO_ID="pijo-$MAC_ADDR"
+fi
+
+sudo hostname "${PIJO_ID}"
+echo "PIJO: $PIJO_ID @ `hostname`"
+
+# ignore failures - if it's already set
+set +e
+sudo systemctl start avahi-daemon.service
+sudo /usr/bin/avahi-set-host-name $PIJO_ID
+set -e
+
+sudo systemctl restart avahi-daemon.service
+
+# docker stacks
+
+IS_STACK_RUNNING=`docker stack ps pijo | grep NODE`
+
+if [ -z "$IS_STACK_RUNNING" ];then
+    if [ -e "stacks/${PIJO_ID}.yaml" ];then
+        echo "PIJO: docker stack'${PIJO_ID}'"
+        docker stack deploy pijo -c stacks/${PIJO_ID}.yaml
+    else
+        echo "PIJO: docker stack 'pijo_rpi'"
+        docker stack deploy pijo -c stacks/pijo_rpi.yaml
+    fi
+fi
+
+docker container ls
+
+## All done
+cd $PWD

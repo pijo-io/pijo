@@ -1,0 +1,28 @@
+#!/bin/sh -e
+#
+# rc.local
+#
+# This script is executed at the end of each multiuser runlevel.
+# Make sure that the script will "exit 0" on success or any other
+# value on error.
+#
+
+# send stdout and stderr from rc.local to a log file
+exec 1>/var/log/rc.local.log 2>&1  
+
+set -x
+
+_IP=$(hostname -I) || true
+if [ "$_IP" ]; then
+  printf "My IP address is %s\n" "$_IP"
+  export PIJO_HOME=/home/pi/pijo
+  $PIJO_HOME/bin/pijo
+  $PIJO_HOME/bin/pijo-fw
+  nohup sleep 60 && $PIJO_HOME/bin/uptimer &
+
+  exit 0
+else
+  echo "A problem occurred: IPv4 not found"
+  exit 1
+fi
+

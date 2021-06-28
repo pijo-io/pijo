@@ -1,0 +1,12 @@
+if [ "$1" ];then
+    MSG="$1";
+else
+    MSG="various"
+fi
+
+git add -A .
+git commit -m "$MSG"
+
+npm version patch
+
+git push

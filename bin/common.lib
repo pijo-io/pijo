@@ -1,0 +1,17 @@
+#!/bin/bash
+
+function pijo_version() {
+    PIJO_VERSION=$(cat $PIJO_HOME/package.json \
+  | grep version \
+  | head -1 \
+  | awk -F: '{ print $2 }' \
+  | sed 's/[",]//g' \
+  | tr -d '[[:space:]]'\
+  )
+}
+
+function pijo_id() {
+    export MAC_ADDR=`cat /sys/class/net/wlan0/address | sed -e "s/:/-/g"`
+    export PIJO_ID="pijo-$MAC_ADDR"
+    echo -n "$PIJO_ID"
+}

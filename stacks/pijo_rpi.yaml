@@ -1,0 +1,87 @@
+################################################################################
+# Node-RED Stack or Compose
+################################################################################
+# docker stack deploy node-red --compose-file docker-compose-node-red.yml
+# docker-compose -f docker-compose-node-red.yml -p myNoderedProject up
+################################################################################
+version: "3.7"
+
+services:
+  rhasspy:
+    image: rhasspy/rhasspy
+    ports:
+      - target: 12101
+        published: 12101
+        mode: host
+    networks:
+      - pijo
+    command: --user-profiles /profiles --profile en
+  rdf4j:
+    image: pijo-rdf4j
+    ports:
+      - target: 8080
+        published: 8080
+        mode: host
+    networks:
+      - pijo
+    volumes:
+      - openrdf:/usr/local/tomcat/rdf4j
+  node-red:
+    image: pijo-node-red:latest
+    environment:
+      - Australia/Sydney
+    ports:
+      - target: 1880
+        published: 1880
+        mode: host
+    networks:
+      - pijo
+    volumes:
+      - node-red-data:/data
+  mosquitto:
+    image: eclipse-mosquitto
+    ports:
+      - target: 1883
+        published: 1883
+        mode: host
+      - target: 8883
+        published: 8883
+        mode: host
+    volumes:
+      - mosquitto-data:/mosquitto/data
+      - mosquitto-logs:/mosquitto/logs
+      - mosquitto-conf:/mosquitto/config
+    restart: unless-stopped
+    networks:
+      - pijo
+  homeassistant:
+    restart: unless-stopped
+    image: homeassistant/raspberrypi4-homeassistant
+    devices:
+      - /dev/ttyUSB0:/dev/ttyUSB0
+      - /dev/ttyUSB1:/dev/ttyUSB1
+      - /dev/ttyACM0:/dev/ttyACM0
+    volumes:
+      - homeassistant:/config
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - target: 8123
+        published: 8123
+        mode: host
+    networks:
+      - pijo
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+
+volumes:
+  mosquitto-data:
+  mosquitto-logs:
+  mosquitto-conf:
+  node-red-data:
+  homeassistant:
+  openrdf:
+
+networks:
+  pijo:

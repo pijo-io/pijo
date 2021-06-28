@@ -1,0 +1,1 @@
+dtparam=i2c_baudrate=1000000

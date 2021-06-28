@@ -1,0 +1,124 @@
+set -e
+
+if [ -z "$PIJO_HOME" ];then
+    echo "PIJO_HOME not set"
+    PIJO_HOME="/home/pi/pijo/"
+fi
+
+LOG_DIR=$PIJO_HOME/log/uptimer
+export TODAY=`date +"%Y-%m-%d-%H-%M"`
+LOG_FILE="$LOG_DIR/$TODAY.log"
+mkdir -p $LOG_DIR
+touch $LOG_FILE
+
+mkdir -p tmp
+
+export MAC_ADDR=`cat /sys/class/net/wlan0/address | sed -e "s/:/-/g"`
+export PIJO_ID="pijo-$MAC_ADDR"
+
+echo "Installing: $PIJO_ID"
+
+if [ ! -f "/usr/bin/git" ];then
+    sudo apt-get install -y git
+fi
+
+if [ ! -f "/usr/bin/avahi-set-host-name" ];then
+# avahi - service discovery
+# https://www.raspberrypi.org/forums/viewtopic.php?t=267113
+
+    echo "Installing avahi"
+    sudo apt-get install -y -qq avahi-utils avahi-daemon 
+fi
+
+# docker
+
+if [ ! -f "/usr/bin/docker" ];then
+echo "Installing Docker"
+
+    set +e
+    sudo addgroup docker
+    sudo usermod -aG docker pi
+    set -e
+
+    curl -fsSL https://get.docker.com -o tmp/get-docker.sh
+
+    sudo sh tmp/get-docker.sh
+    sudo systemctl start docker.service
+fi
+
+sudo systemctl daemon-reload
+
+# Python 3
+
+sudo apt update
+sudo apt install -y python3 idle3 python3-pip python3-pil 
+sudo apt install -y i2c-tools hostapd dnsmasq bluetooth bluez bluez-tools
+sudo apt install -y netfilter-persistent iptables-persistent
+sudo apt install -y jq
+
+sudo pip3 install --upgrade setuptools
+sudo pip3 install --upgrade adafruit-python-shell
+
+# NodeJS
+
+if [ ! -f "/usr/bin/nvm" ];then
+    curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+    nvm install v14.17.1
+fi
+
+# OLED 128x32 screent
+
+sudo pip3 install adafruit-circuitpython-ssd1306
+
+echo "Detecting devices"
+
+# sudo ls /dev/i2c* /dev/spi*
+# sudo i2cdetect -y 1
+
+# networking
+
+echo "Install networking"
+
+cat install/etc/hosts | sed -e "s|PIJO_ID|$PIJO_ID|" >$PIJO_HOME/tmp/hosts
+sudo cp $PIJO_HOME/tmp/hosts /etc/hosts
+
+# ZeroConf
+
+cat install/etc/avahi/avahi-daemon.conf | sed -e "s|PIJO_ID|$PIJO_ID|" >$PIJO_HOME/tmp/avahi-daemon.conf
+sudo cp -rf install/etc/avahi/services /etc/avahi/
+sudo systemctl start avahi-daemon.service
+sudo cp $PIJO_HOME/tmp/avahi-daemon.conf /etc/avahi/avahi-daemon.conf
+
+# Bluetooth
+
+sudo cp -rf install/etc/systemd/system/bluetooth.service.d/* /etc/systemd/system/bluetooth.service.d/
+sudo systemctl daemon-reload
+sudo systemctl restart bluetooth.service
+
+# Nework names
+
+
+echo "Install scripts"
+
+sudo timedatectl set-timezone Australia/Sydney
+sudo cp -f install/home/profile ~/.profile
+sudo cp -f install/home/bashrc ~/.bashrc
+sudo cp -f install/etc/rc.local /etc/rc.local
+
+# Psuedo Developer
+
+git config --global user.email "$PIJO_ID@pijo.io"
+git config --global user.name "$PIJO_ID"
+
+PIJO_PK="$PIJO_HOME/.ssh/id_rsa"
+if [ ! -d "$PIJO_PK" ];then
+    mkdir -p $PIJO_HOME/.ssh/
+    ssh-keygen -f "$PIJO_PK" -t rsa -N ''
+fi
+# Start PIJO
+
+echo "Starting PIJO ..."
+
+$PIJO_HOME/bin/pijo

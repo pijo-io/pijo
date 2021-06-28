@@ -1,0 +1,18 @@
+FROM tomcat:8.5-jre8-alpine
+
+ENV JAVA_OPTS="-Xms512m -Xmx1024m -Xss256k"
+ENV CATALINA_OPTS="-Dorg.eclipse.rdf4j.appdata.basedir=/usr/local/tomcat/rdf4j"
+
+RUN adduser -S tomcat
+
+WORKDIR /usr/local/tomcat
+RUN	mkdir -p rdf4j
+
+# COPY conf/web.xml conf/web.xml
+COPY webapps webapps
+
+RUN	chown -R tomcat .
+RUN	chmod a+x /. ./bin ./bin/catalina.sh
+USER tomcat
+
+EXPOSE 8080

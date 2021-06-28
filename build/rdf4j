@@ -1,0 +1,22 @@
+RDF4J_VERSION="3.7.0"
+
+set -e
+
+cd docker/rdf4j
+
+mkdir -p tmp webapps
+
+if [ ! -f "tmp/rdf4j.zip" ];then
+	wget "https://www.eclipse.org/downloads/download.php?file=/rdf4j/eclipse-rdf4j-${RDF4J_VERSION}-sdk.zip&r=1" -O tmp/rdf4j.zip
+	unzip tmp/rdf4j.zip -d tmp/
+fi
+
+if [ ! -f "webapps/rdf4j-workbench/transformations/graph.xsl" ];then
+	unzip tmp/eclipse-rdf4j-${RDF4J_VERSION}/war/rdf4j-workbench.war -d webapps/rdf4j-workbench
+	unzip tmp/eclipse-rdf4j-${RDF4J_VERSION}/war/rdf4j-server.war -d webapps/rdf4j-server
+fi
+
+docker build . -t pijo-rdf4j -f Dockerfile.custom
+
+cd ../..
+ 

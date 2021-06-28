@@ -1,0 +1,39 @@
+if [ -z "$PIJO_HOME" ];then
+    echo "PIJO_HOME is auto-defined"
+    PIJO_HOME=$HOME/pijo
+fi
+
+LOG_DIR=$PIJO_HOME/log/update/
+mkdir -p $LOG_DIR
+
+function version() {
+    PIJO_VERSION=$(cat $PIJO_HOME/package.json \
+  | grep version \
+  | head -1 \
+  | awk -F: '{ print $2 }' \
+  | sed 's/[",]//g' \
+  | tr -d '[[:space:]]'\
+  )
+}
+cd $PIJO_HOME
+
+set -e
+
+version
+echo "Current version: $PIJO_VERSION"
+OLD_PIJO_VERSION=$PIJO_VERSION
+
+echo "Downloading ..."
+
+git add -A . >/dev/null
+git stash >/dev/null
+git pull >/dev/null 2>/dev/null
+
+version
+if [ "$PIJO_VERSION" = "$OLD_PIJO_VERSION" ];then
+    STATUS="Same version: $PIJO_VERSION ($OLD_PIJO_VERSION)"
+else
+    STATUS="Upgraded version: $OLD_PIJO_VERSION to $PIJO_VERSION"
+fi
+
+echo "$STATUS"
