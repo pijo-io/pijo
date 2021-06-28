@@ -1,5 +1,4 @@
-PIJO: experimental Raspberry PI project
+PIJO: toolbox
 
-```
-    docker cp docker/mosquitto/config/mosquitto.conf b88c42f1b710:/mosquitto/config
-```
+PIJO is designed to run on Raspberry PI hardware. 
+
