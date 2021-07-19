@@ -47,12 +47,12 @@ sudo systemctl restart avahi-daemon.service
 IS_STACK_RUNNING=`docker stack ps pijo | grep NODE`
 
 if [ -z "$IS_STACK_RUNNING" ];then
-    if [ -e "stacks/${PIJO_ID}.yaml" ];then
+    if [ -e "stacks/rpi/${PIJO_ID}.yaml" ];then
         echo "PIJO: docker stack'${PIJO_ID}'"
         docker stack deploy pijo -c stacks/${PIJO_ID}.yaml
     else
         echo "PIJO: docker stack 'pijo_rpi'"
-        docker stack deploy pijo -c stacks/pijo_rpi.yaml
+        docker stack deploy pijo -c stacks/rpi/pijo.yaml
     fi
 fi
 

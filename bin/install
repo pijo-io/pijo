@@ -88,11 +88,12 @@ sudo cp $PIJO_HOME/tmp/hosts /etc/hosts
 
 cat install/etc/avahi/avahi-daemon.conf | sed -e "s|PIJO_ID|$PIJO_ID|" >$PIJO_HOME/tmp/avahi-daemon.conf
 sudo cp -rf install/etc/avahi/services /etc/avahi/
-sudo systemctl start avahi-daemon.service
 sudo cp $PIJO_HOME/tmp/avahi-daemon.conf /etc/avahi/avahi-daemon.conf
+sudo systemctl restart avahi-daemon.service
 
 # Bluetooth
 
+sudo mkdir -p /etc/systemd/system/bluetooth.service.d/
 sudo cp -rf install/etc/systemd/system/bluetooth.service.d/* /etc/systemd/system/bluetooth.service.d/
 sudo systemctl daemon-reload
 sudo systemctl restart bluetooth.service
@@ -112,11 +113,12 @@ sudo cp -f install/etc/rc.local /etc/rc.local
 git config --global user.email "$PIJO_ID@pijo.io"
 git config --global user.name "$PIJO_ID"
 
-PIJO_PK="$PIJO_HOME/.ssh/id_rsa"
-if [ ! -d "$PIJO_PK" ];then
+PIJO_PKI_HOME="$PIJO_HOME/.ssh/id_rsa"
+if [ ! -d "$PIJO_PKI_HOME" ];then
     mkdir -p $PIJO_HOME/.ssh/
-    ssh-keygen -f "$PIJO_PK" -t rsa -N ''
+    ssh-keygen -f "$PIJO_PKI_HOME" -t rsa -N ''
 fi
+
 # Start PIJO
 
 echo "Starting PIJO ..."
