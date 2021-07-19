@@ -34,6 +34,15 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
     restart: unless-stopped
+
+  # db:
+  #   image: postgres:alpine
+  #   restart: always
+  #   volumes:
+  #     - db:/var/lib/postgresql/data
+  #   env_file:
+  #     - db.env
+
   db:
     image: mariadb
     container_name: nextcloud-mariadb
@@ -50,6 +59,10 @@ services:
       - MYSQL_DATABASE=nextcloud
       - MYSQL_USER=nextcloud
     restart: unless-stopped
+
+  redis:
+    image: redis:alpine
+    restart: always
   
   app:
     image: nextcloud:latest
@@ -60,6 +73,7 @@ services:
       - letsencrypt
       - proxy
       - db
+      - redis
     volumes:
       - nextcloud:/var/www/html
       - ./app/config:/var/www/html/config
@@ -89,7 +103,7 @@ services:
       - 9980:9980
     environment:
     # This nees to be the same as what you set your app domain too (ex: cloud.domain.tld).
-      - domain=cloud\\.DOMAIN\\.TDL
+      - domain=cloud\\.DOMAIN\\.TLD
       - username=admin
     # Create a passoword for the collabora office admin page.
       - password=CREATE-A-SECURE-PASSWORD-HERE
@@ -101,6 +115,17 @@ services:
     # This needs to be a real email as it will be used by let's encrypt for your cert and is used to warn you about renewals.
       - LETSENCRYPT_EMAIL=YOUR-EMAIL@DOMAIN.TDL
     restart: unless-stopped 
+
+  nextcloud_cron:
+    build: ./app
+    restart: always
+    volumes:
+      - nextcloud:/var/www/html
+    entrypoint: /cron.sh
+    depends_on:
+      - db
+      - redis
+
 volumes:
   nextcloud:
   db: 
