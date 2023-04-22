@@ -17,7 +17,7 @@
   "dependencies": {
     "graphdb": "^2.0.0",
     "lodash": "^4.17.21",
-    "mqtt": "^4.2.6",
+    "mqtt": "^4.3.7",
     "string-to-stream": "^3.0.1",
     "uuid": "^3.4.0"
   }
